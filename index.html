@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Be My Valentine</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: radial-gradient(circle at top, #ff9a9e, #c9184a);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      color: white;
+    }
+
+    .container {
+      text-align: center;
+      z-index: 3;
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      margin-bottom: 15px;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      margin-bottom: 30px;
+      opacity: 0.9;
+    }
+
+    button {
+      font-size: 1.2rem;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      margin: 10px;
+      user-select: none;
+    }
+
+    #yes {
+      background-color: #ff4d6d;
+      color: white;
+    }
+
+    #no {
+      background-color: #333;
+      color: white;
+      position: absolute;
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .final {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle, #ff4d6d, #800f2f);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2.6rem;
+      z-index: 4;
+      animation: fadeIn 1s ease;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .kiss {
+      position: fixed;
+      top: -50px;
+      font-size: 2rem;
+      animation: fall linear forwards;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(110vh);
+        opacity: 0.85;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="fireworks"></canvas>
+
+  <div class="container" id="main">
+    <h1>Bhavya pyaaru 💖</h1>
+    <h2>Will you be my Valentine?</h2>
+    <button id="yes">Yes 💕</button>
+    <button id="no">No 💩</button>
+  </div>
+
+  <audio id="music" loop>
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6c6c9d3b75.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    const noBtn = document.getElementById("no");
+    const yesBtn = document.getElementById("yes");
+    const main = document.getElementById("main");
+    const music = document.getElementById("music");
+
+    const canvas = document.getElementById("fireworks");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let speedMultiplier = 1;
+    let apologyIndex = 0;
+
+    const apologies = [
+      "Sorry 😭",
+      "Please no 🥺",
+      "Wrong choice 💔",
+      "Think again 😳",
+      "I can't 😵",
+      "Not allowed 🚫",
+      "Be kind 😖"
+    ];
+
+    function moveNoButton() {
+      speedMultiplier += 0.35;
+
+      const maxX = window.innerWidth - 140;
+      const maxY = window.innerHeight - 70;
+
+      const x = Math.random() * maxX;
+      const y = Math.random() * maxY;
+
+      noBtn.textContent = apologies[apologyIndex % apologies.length];
+      apologyIndex++;
+
+      noBtn.style.transition =
+        `left ${0.05 / speedMultiplier}s linear, top ${0.05 / speedMultiplier}s linear`;
+
+      noBtn.style.left = x + "px";
+      noBtn.style.top = y + "px";
+    }
+
+    noBtn.addEventListener("mouseover", moveNoButton);
+    noBtn.addEventListener("touchstart", moveNoButton);
+    moveNoButton();
+
+    yesBtn.addEventListener("click", () => {
+      music.play();
+      main.remove();
+
+      document.body.insertAdjacentHTML(
+        "beforeend",
+        `<div class="final">🎆 It's a date then. 💕</div>`
+      );
+
+      startFireworks();
+      startKissRain();
+    });
+
+    const particles = [];
+
+    function startFireworks() {
+      setInterval(() => {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height * 0.5;
+
+        for (let i = 0; i < 90; i++) {
+          particles.push({
+            x,
+            y,
+            vx: (Math.random() - 0.5) * 6,
+            vy: (Math.random() - 0.5) * 6,
+            life: 100,
+            color: `hsl(${Math.random() * 360}, 100%, 70%)`
+          });
+        }
+      }, 650);
+
+      animate();
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life--;
+
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, 3, 3);
+
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    function startKissRain() {
+      setInterval(() => {
+        const kiss = document.createElement("div");
+        kiss.className = "kiss";
+        kiss.textContent = "💋";
+        kiss.style.left = Math.random() * 100 + "vw";
+        kiss.style.animationDuration =
+          Math.random() * 3 + 3 + "s";
+
+        document.body.appendChild(kiss);
+
+        setTimeout(() => kiss.remove(), 6000);
+      }, 250);
+    }
+  </script>
+
+</body>
+</html>
